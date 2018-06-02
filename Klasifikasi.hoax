@@ -1,0 +1,105 @@
+library(caret)
+
+library(tm)
+
+library(SnowballC)
+
+library(arm)
+
+# Training data.
+
+data <- c('Liburan,Jokowi ajak Jan Ethes ke Dufan',
+
+'Polda Riau : Penggeledahan Universitas Riau Dugaan Teroris',
+
+'Kocak, Saat Sandi Digoda Emak-Emak di Pademagan',
+
+'Google Beri Penjelasan Soal Bug ‘the..1975.com',
+
+'Siswa SMP Bunuh Diri,Diduga Karena Khawatir Tak Bisa Masuk SMA Favorit',
+
+'Raffi Ahmad Bantah Dipecat Pesbukers',
+
+'Polisi Tangkap Orang yang Mengibarkan Bendera OPM',
+
+'Sergio Ramos Ganti Nomor Telepon Setelah Mendapat Teror',
+
+'Mengapa Aset First Travel Diserahkan kepada Negara Bukan Jemaah?',
+
+'Santet dan Hukuman Mati Jadi Pasal Krusial di RUU KUHP')
+
+
+
+corpus <- VCorpus(VectorSource(data))
+
+
+
+# Create a document term matrix.
+
+tdm <- DocumentTermMatrix(corpus, list(removePunctuation = TRUE, stopwords = TRUE, stemming = TRUE, removeNumbers = TRUE))
+
+
+
+# Convert to a data.frame for training and assign a classification (factor) to each document.
+
+train <- as.matrix(tdm)
+
+train <- cbind(train, c(0, 1))
+
+colnames(train)[ncol(train)] <- 'y'
+
+train <- as.data.frame(train)
+
+train$y <- as.factor(train$y)
+
+data
+
+train
+
+# Train.
+
+fit <- train(y ~ ., data = train, method = 'bayesglm')
+
+
+
+# Check accuracy on training.
+
+predict(fit, newdata = train)
+
+
+
+# Test data.
+
+data2 <- c('Liburan,Jokowi ajak Jan Ethes ke Transmart',
+
+'Polda Riau : Penggeledahan Universitas Riau Dugaan Tidak ada GerakanTeroris',
+
+'Kocak, Saat Sandi Digoda Gadis-Gadis di Pademagan',
+
+'Google Tidak Beri Penjelasan Soal Bug ‘the..1975.com',
+
+
+'Siswa SMP Dibunuh,Diduga Karena Ayah Khawatir Tak Bisa Masuk SMA Favorit',
+
+'Raffi Ahmad Dipecat Pesbukers',
+'Polisi Gagal Tangkap Orang yang Mengibarkan Bendera OPM',
+
+'Sergio Ramos Hapus Nomor Telepon Setelah Mendapat Teror',
+
+'Akhirnya Aset First Travel Diserahkan kepada Jemaah?',
+
+
+'Hanya Hukuman Mati Jadi Pasal Krusial di RUU KUHP')
+
+corpus <- VCorpus(VectorSource(data2))
+
+tdm <- DocumentTermMatrix(corpus, control = list(dictionary = Terms(tdm), removePunctuation = TRUE, stopwords = TRUE, stemming = TRUE, removeNumbers = TRUE))
+
+test <- as.matrix(tdm)
+
+
+
+# Check accuracy on test.
+
+predict(fit, newdata = test)
+
